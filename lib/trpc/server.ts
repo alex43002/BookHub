@@ -10,7 +10,7 @@ const t = initTRPC.context().create({
 const isAuthed = t.middleware(async (opts) => {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 

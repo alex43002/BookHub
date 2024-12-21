@@ -1,24 +1,14 @@
-import { prisma } from '@/lib/prisma';
-import type { Book } from '@prisma/client';
+import * as bookDb from '@/lib/db/books';
+import type { Book } from '@/lib/types/book';
 import type { BookFormData } from '@/lib/validators/book';
 
 export class BookService {
   async createBook(userId: string, data: BookFormData): Promise<Book> {
-    return prisma.book.create({
-      data: {
-        ...data,
-        userId,
-      },
-    });
+    return bookDb.createBook(userId, data);
   }
 
   async getBook(id: string, userId: string): Promise<Book | null> {
-    return prisma.book.findFirst({
-      where: {
-        id,
-        userId,
-      },
-    });
+    return bookDb.getBook(id, userId);
   }
 
   async updateBook(
@@ -26,32 +16,14 @@ export class BookService {
     userId: string,
     data: Partial<BookFormData>
   ): Promise<Book | null> {
-    return prisma.book.update({
-      where: {
-        id,
-        userId,
-      },
-      data,
-    });
+    return bookDb.updateBook(id, userId, data);
   }
 
   async deleteBook(id: string, userId: string): Promise<Book | null> {
-    return prisma.book.delete({
-      where: {
-        id,
-        userId,
-      },
-    });
+    return bookDb.deleteBook(id, userId);
   }
 
   async listBooks(userId: string): Promise<Book[]> {
-    return prisma.book.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+    return bookDb.listBooks(userId);
   }
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { useDialog } from '@/hooks/use-dialog';
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ interface AddBookDialogProps {
 }
 
 export function AddBookDialog({ children }: AddBookDialogProps) {
-  const [open, setOpen] = useState(false);
+  const { isOpen, close } = useDialog();
   const utils = trpc.useContext();
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
@@ -46,7 +46,7 @@ export function AddBookDialog({ children }: AddBookDialogProps) {
   const addBook = trpc.book.create.useMutation({
     onSuccess: () => {
       utils.book.list.invalidate();
-      setOpen(false);
+      close();
       form.reset();
     },
   });
@@ -56,7 +56,7 @@ export function AddBookDialog({ children }: AddBookDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={close}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -139,7 +139,7 @@ export function AddBookDialog({ children }: AddBookDialogProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={close}
               >
                 Cancel
               </Button>

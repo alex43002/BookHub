@@ -1,21 +1,26 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '@/lib/trpc/server';
-import { BookService } from '@/lib/services/book';
+import * as bookDb from '@/lib/db/books';
 import { bookSchema } from '@/lib/validators/book';
-
-const bookService = new BookService();
+import { searchBooks } from '@/lib/google-books';
 
 export const bookRouter = router({
+  search: protectedProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ input }) => {
+      return searchBooks(input.query);
+    }),
+
   create: protectedProcedure
     .input(bookSchema)
     .mutation(async ({ input, ctx }) => {
-      return bookService.createBook(ctx.user.id, input);
+      return bookDb.createBook(ctx.user.id, input);
     }),
 
   get: protectedProcedure
     .input(z.string())
     .query(async ({ input, ctx }) => {
-      return bookService.getBook(input, ctx.user.id);
+      return bookDb.getBook(input, ctx.user.id);
     }),
 
   update: protectedProcedure
@@ -24,17 +29,17 @@ export const bookRouter = router({
       data: bookSchema.partial(),
     }))
     .mutation(async ({ input, ctx }) => {
-      return bookService.updateBook(input.id, ctx.user.id, input.data);
+      return bookDb.updateBook(input.id, ctx.user.id, input.data);
     }),
 
   delete: protectedProcedure
     .input(z.string())
     .mutation(async ({ input, ctx }) => {
-      return bookService.deleteBook(input, ctx.user.id);
+      return bookDb.deleteBook(input, ctx.user.id);
     }),
 
   list: protectedProcedure
     .query(async ({ ctx }) => {
-      return bookService.listBooks(ctx.user.id);
+      return bookDb.listBooks(ctx.user.id);
     }),
 });

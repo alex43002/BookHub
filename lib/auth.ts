@@ -1,18 +1,22 @@
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { type NextAuthOptions } from 'next-auth';
+import { AuthOptions } from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from '@/lib/prisma';
-import { compare } from 'bcrypt';
+import { hash, compare } from 'bcryptjs';
+import * as userDb from './db/users';
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import clientPromise from './mongodb';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+export const authOptions: AuthOptions = {
+  adapter: MongoDBAdapter(clientPromise),
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/error',
   },
   providers: [
     GitHubProvider({
@@ -34,24 +38,18 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid credentials');
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-
+        const user = await userDb.getUserByEmail(credentials.email);
         if (!user || !user.password) {
           throw new Error('Invalid credentials');
         }
 
         const isValid = await compare(credentials.password, user.password);
-
         if (!isValid) {
           throw new Error('Invalid credentials');
         }
 
         return {
-          id: user.id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
           image: user.image,
@@ -62,18 +60,21 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ token, session }) {
       if (token) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.picture;
+        session.user = {
+          id: token.sub || '',
+          name: token.name || '',
+          email: token.email || '',
+          image: token.picture || '',
+        };
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.sub = user.id;
       }
       return token;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 };

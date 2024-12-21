@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Book } from '@prisma/client';
+import type { Book } from '@/lib/types/book';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { readingSessionSchema } from '@/lib/validators/reading-session';
+import { readingSessionSchema, type ReadingSessionFormData } from '@/lib/validators/reading-session';
 import { trpc } from '@/lib/trpc/client';
 
 interface ReadingSessionDialogProps {
@@ -32,7 +32,7 @@ interface ReadingSessionDialogProps {
 export function ReadingSessionDialog({ children, book }: ReadingSessionDialogProps) {
   const [open, setOpen] = useState(false);
   const utils = trpc.useContext();
-  const form = useForm({
+  const form = useForm<ReadingSessionFormData>({
     resolver: zodResolver(readingSessionSchema),
     defaultValues: {
       startPage: book.currentPage,
@@ -51,7 +51,7 @@ export function ReadingSessionDialog({ children, book }: ReadingSessionDialogPro
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: ReadingSessionFormData) => {
     addSession.mutate({
       bookId: book.id,
       ...data,
@@ -74,6 +74,7 @@ export function ReadingSessionDialog({ children, book }: ReadingSessionDialogPro
                 <FormItem>
                   <FormLabel>Start Page</FormLabel>
                   <FormControl>
+                    <div className="text-sm text-muted-foreground mb-1">Current page: {book.currentPage}</div>
                     <Input
                       type="number"
                       {...field}
@@ -93,6 +94,7 @@ export function ReadingSessionDialog({ children, book }: ReadingSessionDialogPro
                 <FormItem>
                   <FormLabel>End Page</FormLabel>
                   <FormControl>
+                    <div className="text-sm text-muted-foreground mb-1">Total pages: {book.totalPages}</div>
                     <Input
                       type="number"
                       {...field}
@@ -112,6 +114,7 @@ export function ReadingSessionDialog({ children, book }: ReadingSessionDialogPro
                 <FormItem>
                   <FormLabel>Duration (minutes)</FormLabel>
                   <FormControl>
+                    <div className="text-sm text-muted-foreground mb-1">Time spent reading</div>
                     <Input
                       type="number"
                       {...field}
