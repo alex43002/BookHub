@@ -38,5 +38,5 @@ export async function searchBooks(query: string) {
   }));
 
   // Validate results
-  return results?.map(result => searchResultSchema.parse(result)) || [];
+  return results?.map((result: unknown) => searchResultSchema.parse(result)) || [];
 }
