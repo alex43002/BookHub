@@ -6,36 +6,44 @@ export async function getReadingStats(userId: string) {
   const client = await clientPromise;
   const db = client.db();
 
-  const [completedBooks, currentlyReading, sessions] = await Promise.all([
-    db.collection('books').countDocuments({ 
-      userId, 
-      status: 'COMPLETED' 
-    }),
-    db.collection('books').countDocuments({ 
-      userId, 
-      status: 'READING' 
-    }),
-    db.collection('readingSessions')
-      .find({ userId })
-      .toArray()
-  ]);
+  // Calculate stats from books collection
+  const books = await db.collection('books').aggregate([
+    { $match: { userId } },
+    {
+      $group: {
+        _id: null,
+        completedBooks: {
+          $sum: { $cond: [{ $eq: ['$status', 'COMPLETED'] }, 1, 0] }
+        },
+        currentlyReading: {
+          $sum: { $cond: [{ $eq: ['$status', 'READING'] }, 1, 0] }
+        },
+        totalPagesRead: {
+          $sum: '$currentPage'
+        }
+      }
+    }
+  ]).toArray();
 
-  const totalPagesRead = sessions.reduce((sum, session) => 
-    sum + (session.endPage - session.startPage), 0);
-  
-  const totalReadingTime = sessions.reduce((sum, session) => 
-    sum + session.duration, 0);
+  const stats = books[0] || {
+    completedBooks: 0,
+    currentlyReading: 0,
+    totalPagesRead: 0
+  };
 
-  const averageReadingTime = sessions.length 
-    ? Math.round(totalReadingTime / sessions.length)
-    : 0;
+  // For now, estimate reading time based on pages read
+  // Assuming average reading speed of 2 minutes per page
+  const estimatedTimePerPage = 2;
+  const totalReadingTime = stats.totalPagesRead * estimatedTimePerPage;
 
   return {
-    completedBooks,
-    currentlyReading,
-    totalPagesRead,
+    completedBooks: stats.completedBooks,
+    currentlyReading: stats.currentlyReading,
+    totalPagesRead: stats.totalPagesRead,
     totalReadingTime,
-    averageReadingTime
+    averageReadingTime: stats.completedBooks > 0 
+      ? Math.round(totalReadingTime / stats.completedBooks)
+      : 0
   };
 }
 
@@ -46,24 +54,37 @@ export async function getReadingTrends(userId: string) {
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-  const sessions = await db.collection('readingSessions')
-    .find({
-      userId,
-      date: { $gte: sixMonthsAgo }
-    })
-    .sort({ date: 1 })
-    .toArray();
+  // Get reading progress from books collection
+  const books = await db.collection('books').aggregate([
+    { 
+      $match: { 
+        userId,
+        updatedAt: { $gte: sixMonthsAgo }
+      } 
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: '%Y-%m-01',
+            date: '$updatedAt'
+          }
+        },
+        pagesRead: { $sum: '$currentPage' }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        month: '$_id',
+        pagesRead: 1
+      }
+    },
+    { $sort: { month: 1 } }
+  ]).toArray();
 
-  const monthlyData = sessions.reduce((acc, session) => {
-    const month = startOfMonth(session.date).toISOString();
-    const pagesRead = session.endPage - session.startPage;
-    
-    if (!acc[month]) {
-      acc[month] = { month, pagesRead: 0 };
-    }
-    acc[month].pagesRead += pagesRead;
-    return acc;
-  }, {} as Record<string, { month: string; pagesRead: number }>);
-
-  return Object.values(monthlyData);
+  return books.map(({ month, pagesRead }) => ({
+    month,
+    pagesRead
+  }));
 }

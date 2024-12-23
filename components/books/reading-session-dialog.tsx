@@ -44,10 +44,44 @@ export function ReadingSessionDialog({ children, book }: ReadingSessionDialogPro
 
   const addSession = trpc.readingSession.create.useMutation({
     onSuccess: () => {
+      // Invalidate all affected queries
       utils.book.get.invalidate(book.id);
       utils.readingSession.list.invalidate();
+      utils.stats.overview.invalidate();
+      utils.stats.trends.invalidate();
+      utils.analytics.overview.invalidate();
       setOpen(false);
       form.reset();
+    },
+    onMutate: async (newSession) => {
+      // Cancel outgoing stats fetches
+      await utils.stats.overview.cancel();
+      const previousStats = utils.stats.overview.getData();
+    
+      // Optimistically update stats
+      utils.stats.overview.setData(undefined, (old) => {
+        // Ensure all fields are explicitly defined
+        const totalPagesRead = (old?.totalPagesRead || 0) + (newSession.endPage - newSession.startPage);
+        const totalReadingTime = (old?.totalReadingTime || 0) + newSession.duration;
+    
+        // Maintain structure while explicitly providing defaults
+        return {
+          totalPagesRead,
+          totalReadingTime,
+          completedBooks: old?.completedBooks || 0,
+          currentlyReading: old?.currentlyReading || 0,
+          averageReadingTime: old?.averageReadingTime || 0,
+        };
+      });
+    
+      return { previousStats };
+    },
+    
+    onError: (err, newSession, context) => {
+      // Rollback on error
+      if (context?.previousStats) {
+        utils.stats.overview.setData(undefined, context.previousStats);
+      }
     },
   });
 

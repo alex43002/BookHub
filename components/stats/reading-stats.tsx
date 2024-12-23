@@ -3,10 +3,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/lib/trpc/client';
 import { Book, Clock, BookOpen } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 export function ReadingStats() {
-  const { data: stats, isLoading } = trpc.stats.overview.useQuery();
+  const { data: stats, isLoading } = trpc.stats.overview.useQuery(undefined, {
+    // Refresh data periodically
+    refetchInterval: 30000,
+    // Keep data fresh for 30 seconds
+    staleTime: 30000
+  });
 
   if (isLoading) {
     return <div>Loading stats...</div>;
