@@ -35,6 +35,8 @@ export default function SignUp() {
         redirect: false,
       });
 
+      console.log('DATABASE_URL:', process.env.DATABASE_URL);
+      console.log(result);
       if (result?.error) {
         setError('Error signing in after registration');
         return;

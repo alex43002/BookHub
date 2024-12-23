@@ -1,3 +1,5 @@
+import { searchResultSchema } from '@/lib/types/search';
+
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
 export interface GoogleBook {
@@ -23,7 +25,7 @@ export async function searchBooks(query: string) {
   );
   const data = await response.json();
 
-  return data.items?.map((item: GoogleBook) => ({
+  const results = data.items?.map((item: GoogleBook) => ({
     id: item.id,
     title: item.volumeInfo.title,
     author: item.volumeInfo.authors?.[0] || 'Unknown Author',
@@ -33,5 +35,8 @@ export async function searchBooks(query: string) {
     isbn: item.volumeInfo.industryIdentifiers?.find(
       (id) => id.type === 'ISBN_13'
     )?.identifier,
-  })) || [];
+  }));
+
+  // Validate results
+  return results?.map(result => searchResultSchema.parse(result)) || [];
 }

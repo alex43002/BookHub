@@ -17,7 +17,7 @@ export interface MongoBook {
 }
 
 export interface Book {
-  id: string;
+  id: string; // Mapping _id to id as string for frontend usage
   title: string;
   author: string;
   isbn?: string | null;
@@ -28,4 +28,13 @@ export interface Book {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Adjusted mapping function to ensure seamless conversion
+export function mapMongoBookToBook(book: MongoBook): Book {
+  const { _id, ...rest } = book;
+  return {
+    id: _id.toString(),
+    ...rest,
+  };
 }

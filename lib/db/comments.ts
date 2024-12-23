@@ -17,7 +17,8 @@ export async function addComment(userId: string, shareId: string, text: string) 
     shareId: new ObjectId(shareId),
     userId,
     text,
-    createdAt: new Date()
+    createdAt: new Date(),
+    _id: new ObjectId
   });
 
   return {

@@ -49,7 +49,7 @@ export const authOptions: AuthOptions = {
         }
 
         return {
-          id: user._id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
           image: user.image,
@@ -71,10 +71,10 @@ export const authOptions: AuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        token.sub = user.id;
+        token.sub = user.id || ''; // Ensure `sub` is properly assigned
       }
       return token;
     },
-  },
+  },  
   debug: process.env.NODE_ENV === 'development',
 };

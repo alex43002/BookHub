@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
+import { type SearchResult } from '@/lib/types/search';
+import { type BookFormData } from '@/lib/validators/book';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +18,7 @@ export function BookSearchResults({ query }: BookSearchResultsProps) {
   const { data: books, isLoading } = trpc.book.search.useQuery({ query });
   const { toast } = useToast();
   const utils = trpc.useContext();
-
+  
   const addBook = trpc.book.create.useMutation({
     onSuccess: () => {
       utils.book.list.invalidate();
@@ -26,6 +28,28 @@ export function BookSearchResults({ query }: BookSearchResultsProps) {
       });
     },
   });
+
+  const handleAddBook = useCallback((searchResult: SearchResult) => {
+    const bookData: BookFormData = {
+      title: searchResult.title,
+      author: searchResult.author,
+      isbn: searchResult.isbn,
+      coverImage: searchResult.coverImage,
+      totalPages: searchResult.totalPages,
+      currentPage: 0,
+      status: 'UNREAD'
+    };
+
+    addBook.mutate(bookData, {
+      onError: (error) => {
+        toast({
+          title: 'Error adding book',
+          description: error.message,
+          variant: 'destructive'
+        });
+      }
+    });
+  }, [addBook, toast]);
 
   if (isLoading) {
     return <div>Searching books...</div>;
@@ -59,7 +83,7 @@ export function BookSearchResults({ query }: BookSearchResultsProps) {
             <Button
               variant="outline"
               size="icon"
-              onClick={() => addBook.mutate(book)}
+              onClick={() => handleAddBook(book)}
               disabled={addBook.isLoading}
             >
               <Plus className="h-4 w-4" />
