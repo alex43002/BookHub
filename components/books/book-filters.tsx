@@ -20,7 +20,7 @@ interface BookFiltersProps {
 
 export function BookFilters({ onSearchChange, onStatusChange, onSortChange }: BookFiltersProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -29,18 +29,20 @@ export function BookFilters({ onSearchChange, onStatusChange, onSortChange }: Bo
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <Select onValueChange={onStatusChange} defaultValue="ALL">
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="Filter by status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="ALL">All Books</SelectItem>
-          <SelectItem value="UNREAD">Unread</SelectItem>
-          <SelectItem value="READING">Reading</SelectItem>
-          <SelectItem value="COMPLETED">Completed</SelectItem>
-        </SelectContent>
-      </Select>
-      <BookSort onSortChange={onSortChange} />
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <Select onValueChange={onStatusChange} defaultValue="ALL">
+          <SelectTrigger className="w-full sm:w-[140px] lg:w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Books</SelectItem>
+            <SelectItem value="UNREAD">Unread</SelectItem>
+            <SelectItem value="READING">Reading</SelectItem>
+            <SelectItem value="COMPLETED">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        <BookSort onSortChange={onSortChange} />
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ interface BookSortProps {
 export function BookSort({ onSortChange }: BookSortProps) {
   return (
     <Select onValueChange={onSortChange} defaultValue="updated">
-      <SelectTrigger className="w-full sm:w-[180px]">
+      <SelectTrigger className="w-full sm:w-[140px] lg:w-[180px]">
         <SelectValue placeholder="Sort by" />
       </SelectTrigger>
       <SelectContent>

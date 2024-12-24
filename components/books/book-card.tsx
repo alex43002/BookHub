@@ -53,9 +53,11 @@ export function BookCard({ book }: BookCardProps) {
       </CardContent>
       <CardFooter className="justify-end space-x-2">
         <ReadingSessionDialog book={book}>
-          <Button variant="outline" size="icon">
-            <BookOpen className="h-4 w-4" />
-          </Button>
+          <div>
+            <Button variant="outline" size="icon">
+              <BookOpen className="h-4 w-4" />
+            </Button>
+          </div>
         </ReadingSessionDialog>
         <EditBookDialog book={book}>
           <Button variant="outline" size="icon">

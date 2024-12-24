@@ -30,27 +30,27 @@ export default function Dashboard() {
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
+          <div className="w-full sm:w-auto">
             <h1 className="text-3xl font-bold">My Books</h1>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex w-full sm:w-auto gap-2">
             <SetGoalDialog>
-              <Button variant="outline">
+              <Button variant="outline" className="flex-1 sm:flex-none justify-center">
                 <Target className="mr-2 h-4 w-4" />
                 Set Goal
               </Button>
             </SetGoalDialog>
             <AddBookDialog>
-              <Button>
+              <Button className="flex-1 sm:flex-none justify-center">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Book
               </Button>
             </AddBookDialog>
           </div>
         </div>
-        <div className="space-y-8 mb-8">
+        <div className="space-y-4 sm:space-y-8 mb-6 sm:mb-8">
           <ErrorBoundary>
             <GoalProgress />
           </ErrorBoundary>
