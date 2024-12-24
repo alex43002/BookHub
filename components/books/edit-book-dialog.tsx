@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Book } from '@prisma/client';
+import { TRPCClientError } from '@trpc/client';
 import { Button } from '@/components/ui/button';
+import { Book } from '@/lib/types/book';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ interface EditBookDialogProps {
 
 export function EditBookDialog({ children, book }: EditBookDialogProps) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const utils = trpc.useContext();
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
@@ -55,11 +57,20 @@ export function EditBookDialog({ children, book }: EditBookDialogProps) {
   const editBook = trpc.book.update.useMutation({
     onSuccess: () => {
       utils.book.list.invalidate();
+      setError(null);
       setOpen(false);
     },
+    onError: (err) => {
+      if (err instanceof TRPCClientError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    }
   });
 
   const onSubmit = (data: BookFormData) => {
+    setError(null);
     editBook.mutate({ id: book.id, data });
   };
 
@@ -70,6 +81,11 @@ export function EditBookDialog({ children, book }: EditBookDialogProps) {
         <DialogHeader>
           <DialogTitle>Edit Book</DialogTitle>
         </DialogHeader>
+        {error && (
+          <div className="mb-4 p-2 text-sm text-destructive bg-destructive/10 rounded">
+            {error}
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -104,15 +120,28 @@ export function EditBookDialog({ children, book }: EditBookDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Current Page</FormLabel>
+                  <div className="text-sm text-muted-foreground mb-1">Total pages: {book.totalPages}</div>
                   <FormControl>
                     <Input
                       type="number"
+                      min="0"
+                      max={book.totalPages}
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value) || 0)
                       }
                     />
                   </FormControl>
+                  {field.value > book.totalPages && (
+                    <p className="text-sm text-destructive mt-1">
+                      Cannot exceed total pages ({book.totalPages})
+                    </p>
+                  )}
+                  {field.value < 0 && (
+                    <p className="text-sm text-destructive mt-1">
+                      Page number cannot be negative
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
