@@ -1,18 +1,34 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { trpc } from '@/lib/trpc/client';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 
+type TimeUnit = 'month' | 'day';
+
 export function ReadingTrends() {
-  const { data: trends, isLoading } = trpc.stats.trends.useQuery();
+  const [timeUnit, setTimeUnit] = useState<TimeUnit>('month');
+  const { data: trends, isLoading } = trpc.stats.trends.useQuery({ timeUnit });
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Reading Trends</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Reading Trends</CardTitle>
+            <Select value={timeUnit} onValueChange={(value: TimeUnit) => setTimeUnit(value)}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="month">Monthly</SelectItem>
+                <SelectItem value="day">Daily</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -27,7 +43,18 @@ export function ReadingTrends() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Reading Trends</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Reading Trends</CardTitle>
+            <Select value={timeUnit} onValueChange={(value: TimeUnit) => setTimeUnit(value)}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="month">Monthly</SelectItem>
+                <SelectItem value="day">Daily</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -41,7 +68,18 @@ export function ReadingTrends() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reading Trends</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Reading Trends</CardTitle>
+          <Select value={timeUnit} onValueChange={(value: TimeUnit) => setTimeUnit(value)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="month">Monthly</SelectItem>
+              <SelectItem value="day">Daily</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -49,11 +87,11 @@ export function ReadingTrends() {
             <LineChart data={trends}>
               <XAxis
                 dataKey="month"
-                tickFormatter={(value) => format(new Date(value), 'MMM')}
+                tickFormatter={(value) => format(new Date(value), timeUnit === 'month' ? 'MMM' : 'MMM d')}
               />
               <YAxis />
               <Tooltip
-                labelFormatter={(value) => format(new Date(value), 'MMMM yyyy')}
+                labelFormatter={(value) => format(new Date(value), timeUnit === 'month' ? 'MMMM yyyy' : 'MMMM d, yyyy')}
                 formatter={(value: number) => [`${value} pages`, 'Pages Read']}
               />
               <Line

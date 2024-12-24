@@ -47,34 +47,36 @@ export async function getReadingStats(userId: string) {
   };
 }
 
-export async function getReadingTrends(userId: string) {
+export async function getReadingTrends(userId: string, timeUnit: 'month' | 'day') {
   const client = await clientPromise;
   const db = client.db();
-
+  
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-  // Get reading progress from books collection
-  const books = await db.collection('books').aggregate([
+  
+  const dateFormat = timeUnit === 'month' ? '%Y-%m-01' : '%Y-%m-%d';
+  
+  // Get reading progress from reading trends
+  const trends = await db.collection('readingTrends').aggregate([
     { 
       $match: { 
         userId,
-        updatedAt: { $gte: sixMonthsAgo }
+        date: { $gte: sixMonthsAgo }
       } 
     },
     {
       $group: {
         _id: {
           $dateToString: {
-            format: '%Y-%m-01',
-            date: '$updatedAt'
+            format: dateFormat,
+            date: '$date'
           }
         },
-        pagesRead: { $sum: '$currentPage' }
+        pagesRead: { $sum: '$pagesRead' }
       }
     },
     {
-      $project: {
+      $project: { 
         _id: 0,
         month: '$_id',
         pagesRead: 1
@@ -83,7 +85,7 @@ export async function getReadingTrends(userId: string) {
     { $sort: { month: 1 } }
   ]).toArray();
 
-  return books.map(({ month, pagesRead }) => ({
+  return trends.map(({ month, pagesRead }) => ({
     month,
     pagesRead
   }));
