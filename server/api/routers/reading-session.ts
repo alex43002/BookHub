@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '@/lib/trpc/server';
-import { readingSessionSchema } from '@/lib/validators/reading-session';
 import * as sessionDb from '@/lib/db/reading-sessions';
 
 export const readingSessionRouter = router({
