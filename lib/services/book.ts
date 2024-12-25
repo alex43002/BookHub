@@ -3,7 +3,7 @@ import type { Book } from '@/lib/types/book';
 import type { BookFormData } from '@/lib/validators/book';
 
 export class BookService {
-  async createBook(userId: string, data: BookFormData): Promise<Book> {
+  async createBook(userId: string, data: BookFormData): Promise<Book | null> {
     return bookDb.createBook(userId, data);
   }
 

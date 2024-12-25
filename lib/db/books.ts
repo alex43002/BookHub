@@ -12,7 +12,7 @@ function mapMongoBookToBook(book: MongoBook): Book {
   };
 }
 
-export async function createBook(userId: string, data: Omit<Book, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) {
+export async function createBook(userId: string, data: Omit<Book, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Book | null> {
   const client = await clientPromise;
   if (!client) return null;
 
