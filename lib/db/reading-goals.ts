@@ -18,7 +18,8 @@ export async function createGoal(userId: string, data: Omit<ReadingGoal, '_id' |
   const result = await db.collection<ReadingGoal>('readingGoals').insertOne({
     ...data,
     userId,
-    progress: 0
+    progress: 0,
+    _id: new ObjectId
   });
 
   return {
@@ -44,12 +45,31 @@ export async function getCurrentGoal(userId: string) {
 export async function updateGoalProgress(id: string, userId: string, progress: number) {
   const client = await clientPromise;
   const db = client.db();
-  
-  const result = await db.collection<ReadingGoal>('readingGoals').findOneAndUpdate(
-    { _id: new ObjectId(id), userId },
-    { $set: { progress } },
-    { returnDocument: 'after' }
+
+  // Perform the update operation
+  const result = await db.collection<ReadingGoal>('readingGoals').updateOne(
+    { _id: new ObjectId(id), userId }, // Query filter
+    { $set: { progress } } // Update the progress field
   );
 
-  return result.value;
+  // Check if the update operation was successful
+  if (result.modifiedCount === 0) {
+    return null;
+  }
+
+  // Fetch the updated document
+  const updatedGoal = await db.collection<ReadingGoal>('readingGoals').findOne({
+    _id: new ObjectId(id),
+    userId,
+  });
+
+  if (!updatedGoal) {
+    return null;
+  }
+
+  // Convert ObjectId to string and return the updated goal
+  return {
+    id: updatedGoal._id.toString(),
+    ...updatedGoal,
+  };
 }

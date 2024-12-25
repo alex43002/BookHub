@@ -22,17 +22,19 @@ export const notificationsRouter = router({
       return notifications.length;
     }),
 
-  markAsRead: protectedProcedure
-    .input(z.string().optional())
+    markAsRead: protectedProcedure
+    .input(z.string().optional()) // Accepts either a string (notification ID) or undefined
     .mutation(async ({ input, ctx }) => {
       if (input) {
+        // Mark a specific notification as read
         return notificationsDb.markNotificationAsRead(input, ctx.user.id);
       }
-      // Mark all as read if no specific notification ID is provided
+      // Mark all as read if no specific ID is provided
       const unread = await notificationsDb.getUnreadNotifications(ctx.user.id);
       await Promise.all(
-        unread.map(n => notificationsDb.markNotificationAsRead(n._id.toString(), ctx.user.id))
+        unread.map((n) => notificationsDb.markNotificationAsRead(n._id.toString(), ctx.user.id))
       );
       return { success: true };
     }),
+  
 });

@@ -4,6 +4,7 @@ import { BookCard } from './book-card';
 import { BookFilters } from './book-filters';
 import { trpc } from '@/lib/trpc/client';
 import { useBookFilters } from '@/hooks/use-book-filters';
+import { BookStatus } from '@/lib/utils/book';
 
 export function BookList() {
   const { data: books, isLoading } = trpc.book.list.useQuery();
@@ -26,7 +27,7 @@ export function BookList() {
       <>
         <BookFilters
           onSearchChange={setSearch}
-          onStatusChange={setStatus}
+          onStatusChange={(value) => setStatus(value as BookStatus | "ALL")}
           onSortChange={setSort}
         />
         <div className="text-center py-12">
@@ -42,7 +43,7 @@ export function BookList() {
     <>
       <BookFilters
         onSearchChange={setSearch}
-        onStatusChange={setStatus}
+        onStatusChange={(value) => setStatus(value as BookStatus | "ALL")}
         onSortChange={setSort}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">

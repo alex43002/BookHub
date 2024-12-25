@@ -61,7 +61,7 @@ export function BookSearchResults({ query }: BookSearchResultsProps) {
 
   return (
     <div className="grid gap-4">
-      {books.map((book) => (
+      {books.map((book: { title: string; author: string; totalPages: number; id: string; description?: string | undefined; isbn?: string | undefined; coverImage?: string | undefined; }) => (
         <Card key={book.id}>
           <CardContent className="flex items-center p-4">
             {book.coverImage && (

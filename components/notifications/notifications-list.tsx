@@ -22,11 +22,13 @@ export function NotificationsList() {
     isLoading,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = trpc.notifications.list.useInfiniteQuery(
     { limit: 20 },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
+
+  const markAsReadMutation = trpc.notifications.markAsRead.useMutation();
 
   const loadMoreRef = useInfiniteScroll(
     () => fetchNextPage(),
@@ -34,15 +36,12 @@ export function NotificationsList() {
     isFetchingNextPage
   );
 
-  const utils = trpc.useContext();
-
   // Mark notifications as read when viewed
   useEffect(() => {
-    const hasNotifications = data?.pages[0]?.items?.length > 0;
-    if (hasNotifications) {
-      utils.notifications.markAsRead.mutate();
+    if (data?.pages.some((page) => page.items.length > 0)) {
+      markAsReadMutation.mutate();
     }
-  }, [data?.pages, utils.notifications.markAsRead]);
+  }, [data?.pages, markAsReadMutation]);
 
   if (isLoading) {
     return <div>Loading notifications...</div>;
@@ -77,9 +76,7 @@ export function NotificationsList() {
                 </div>
               </div>
               <div className="flex-1">
-                <p className="text-sm">
-                  {notification.data.message}
-                </p>
+                <p className="text-sm">{notification.data.message}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatRelativeTime(new Date(notification.createdAt))}
                 </p>

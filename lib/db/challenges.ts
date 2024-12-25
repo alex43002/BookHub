@@ -19,7 +19,8 @@ export async function createChallenge(userId: string, data: ChallengeFormData) {
     userId,
     progress: 0,
     completed: false,
-    createdAt: new Date(),
+    completedAt: new Date(),
+    _id: new ObjectId
   });
 
   return {
@@ -57,32 +58,59 @@ export async function getCompletedChallenges(userId: string) {
     .toArray();
 }
 
-export async function updateChallengeProgress(id: string, userId: string, progress: number) {
+export async function updateChallengeProgress(
+  id: string,
+  userId: string,
+  progress: number
+) {
   const client = await clientPromise;
   const db = client.db();
 
+  // Find the challenge to ensure it exists
   const challenge = await db.collection<Challenge>('challenges').findOne({
     _id: new ObjectId(id),
-    userId
+    userId,
   });
 
-  if (!challenge) return null;
+  if (!challenge) {
+    return null;
+  }
 
+  // Determine if the challenge is completed and set the completion timestamp
   const completed = progress >= challenge.target;
   const completedAt = completed && !challenge.completed ? new Date() : challenge.completedAt;
 
-  const result = await db.collection<Challenge>('challenges').findOneAndUpdate(
+  // Perform the update operation
+  const result = await db.collection<Challenge>('challenges').updateOne(
     { _id: new ObjectId(id), userId },
     {
       $set: {
         progress,
         completed,
         completedAt,
-        updatedAt: new Date()
-      }
-    },
-    { returnDocument: 'after' }
+        updatedAt: new Date(),
+      },
+    }
   );
 
-  return result.value;
+  // Check if the update was successful
+  if (result.modifiedCount === 0) {
+    return null;
+  }
+
+  // Fetch the updated document after the update
+  const updatedChallenge = await db.collection<Challenge>('challenges').findOne({
+    _id: new ObjectId(id),
+    userId,
+  });
+
+  if (!updatedChallenge) {
+    return null;
+  }
+
+  // Convert ObjectId to string and return the updated challenge
+  return {
+    id: updatedChallenge._id.toString(),
+    ...updatedChallenge,
+  };
 }
