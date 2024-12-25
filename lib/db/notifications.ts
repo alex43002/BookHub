@@ -20,6 +20,7 @@ export async function createNotification(userId: string, type: Notification['typ
     data,
     read: false,
     createdAt: new Date(),
+    _id: new ObjectId
   });
 
   return {
@@ -41,9 +42,10 @@ export async function markNotificationAsRead(id: string, userId: string) {
     { $set: { read: true } },
     { returnDocument: 'after' }
   );
-
-  return result.value;
+  // Return the document from the `result` instead of accessing `value`
+  return result;
 }
+
 
 export async function getUnreadNotifications(userId: string) {
   const client = await clientPromise;
