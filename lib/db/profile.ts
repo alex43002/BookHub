@@ -32,5 +32,5 @@ export async function updateProfile(userId: string, data: ProfileFormData) {
     }
   );
 
-  return result.value;
+  return result;
 }
