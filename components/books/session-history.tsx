@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, BookOpen } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Book } from '@/lib/types/book';
-import { BookUpdateHistory, ReadingSession } from '@/lib/types/reading-session';
+import { BookUpdateHistory } from '@/lib/types/reading-session';
 import { ErrorBoundary } from '@/components/error-boundary';
 
 interface SessionHistoryProps {
@@ -16,28 +16,31 @@ interface SessionEntryProps {
   session: BookUpdateHistory;
 }
 
-
-
 function SessionEntry({ session }: SessionEntryProps) {
   const pagesRead = session.pagesRead;
   const formattedDate = format(session.date, 'MMM d, yyyy');
   const formattedTime = format(session.date, 'h:mm a');
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  console.log(session);
   return (
     <div className="flex items-center justify-between border-b pb-2 last:border-0">
       <div className="space-y-1">
         <div className="flex items-center space-x-2">
           <BookOpen className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            Pages: {pagesRead}
+            {pagesRead} pages read
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {formattedTime}
           </span>
         </div>
       </div>
-      <div className="text-sm text-muted-foreground text-right">
-        <div>{formattedDate}</div>
-        <div>{formattedTime} {timezone}</div>
+      <div className="text-sm text-right">
+        <div className="font-medium">{formattedDate}</div>
+        <div className="text-xs text-muted-foreground">{timezone}</div>
       </div>
     </div>
   );
