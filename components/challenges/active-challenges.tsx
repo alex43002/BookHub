@@ -47,7 +47,7 @@ export function ActiveChallenges() {
                     <span>Progress</span>
                     <span>{progress}%</span>
                   </div>
-                  <Progress value={progress} />
+                  <Progress value={progress || 0} max={100} />
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center text-muted-foreground">

@@ -31,7 +31,7 @@ export default function Dashboard() {
   return (
     <ErrorBoundary>
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
+        {/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
           <div className="w-full sm:w-auto">
             <h1 className="text-3xl font-bold">My Books</h1>
           </div>
@@ -63,7 +63,7 @@ export default function Dashboard() {
         </div>
         <ErrorBoundary>
           <BookList />
-        </ErrorBoundary>
+        </ErrorBoundary> */}
       </div>
     </ErrorBoundary>
   );
