@@ -34,7 +34,7 @@ export default function ChallengePage() {
         </TabsContent>
 
         <TabsContent value="completed">
-          {/* <CompletedChallenges /> */}
+          <CompletedChallenges />
         </TabsContent>
       </Tabs>
     </div>
