@@ -2,6 +2,18 @@
 
 import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react';
 
-export function SessionProvider({ children }: { children: React.ReactNode }) {
-  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>;
+interface SessionProviderProps {
+  children: React.ReactNode;
+  session?: any; // Adjust type if using TypeScript with specific session types
+}
+
+export function SessionProvider({ children, session }: SessionProviderProps) {
+  // Log session for debugging purposes
+  console.log('SessionProvider initialized with session:', session);
+
+  return (
+    <NextAuthSessionProvider session={session}>
+      {children}
+    </NextAuthSessionProvider>
+  );
 }
