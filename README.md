@@ -32,7 +32,7 @@ A modern web application designed for avid readers to track their reading progre
 
 ### **1. Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/booktracker.git
+git clone https://github.com/alex43002/booktracker.git
 cd booktracker
 ```
 
