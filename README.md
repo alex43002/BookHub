@@ -2,6 +2,8 @@
 
 A modern web application designed for avid readers to track their reading progress, set goals, and connect with like-minded individuals.
 
+![Hero Page]{}(./hero_page.png?raw=true)
+
 ---
 
 ## **Features**
